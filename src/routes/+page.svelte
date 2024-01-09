@@ -1,77 +1,94 @@
 <script>
-	let todos = $state([]);
-	let filter = $state('all');
-	let filteredTodos = $derived(filterTodos());
+	let tasks = $state([]);
+	let remaining = $derived(remainingTasks());
 
-	function addTodo(event) {
+	function addTask(event) {
 		if (event.key !== 'Enter') return;
-
-		const todoElement = event.target;
-		const text = todoElement.value;
+		const taskElement = event.target;
+		const text = taskElement.value;
 		const checked = false;
 
 		if (text !== '') {
-			todos = [...todos, { text, checked }];
-			todoElement.value = '';
+			tasks = [...tasks, { text, checked }];
+			taskElement.value = '';
 		}
 	}
 
-	function editTodo(event) {
-		const todoElement = event.target;
-		const index = todoElement.dataset.index;
-		todos[index].text = todoElement.value;
+	function editTask(event) {
+		const taskElement = event.target;
+		const index = taskElement.dataset.index;
+		tasks[index].text = taskElement.value;
 	}
 
-	function toggleTodo(event) {
-		const todoElement = event.target;
-		const index = todoElement.dataset.index;
-		todos[index].checked = !todos[index].checked;
+	function toggleTask(event) {
+		const taskElement = event.target;
+		const index = taskElement.dataset.index;
+		tasks[index].checked = !tasks[index].checked;
 	}
 
-	function setFilter(selectedFilter) {
-		filter = selectedFilter;
+	function remainingTasks() {
+		let remainingTasks = tasks.filter((task) => !task.checked);
+		return remainingTasks.length;
 	}
 
-	function filterTodos() {
-		switch (filter) {
-			case 'all':
-				return todos;
-			case 'remaining':
-				return todos.filter((todo) => !todo.checked);
-			case 'completed':
-				return todos.filter((todo) => todo.checked);
-		}
+	function deleteTask(event) {
+		const taskElement = event.target;
+		const index =
+			taskElement.parentElement.parentElement.parentElement.childNodes[2].childNodes[0].dataset
+				.index;
+		tasks.splice(index, 1);
 	}
 </script>
 
-<div class="todos h-screen w-screen flex flex-col justify-center items-center gap-4">
-	{#each filteredTodos as todo, i}
-		<div class="todo flex gap-2">
+<div class="tasks h-screen w-screen flex flex-col justify-center items-center gap-4">
+	{#each tasks as task, i}
+		<div class="task flex gap-2">
 			<input
 				type="text"
-				value={todo.text}
+				value={task.text}
 				class="input input-bordered"
-				oninput={editTodo}
+				oninput={editTask}
 				data-index={i}
 			/>
 			<div class="checkboxes flex justify-center items-center">
 				<input
 					type="checkbox"
-					checked={todo.checked}
-					class="checkbox checkbox-success"
-					onchange={toggleTodo}
+					checked={task.checked}
+					class="checkbox checkbox-lg checkbox-success rounded-full"
+					onchange={toggleTask}
 					data-index={i}
 				/>
 			</div>
+			<div class="flex justify-center items-center">
+				<button class="btn btn-sm btn-outline btn-error rounded-full" onclick={deleteTask}
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-6 w-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						><path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/></svg
+					></button
+				>
+			</div>
 		</div>
 	{/each}
-	<div class="flex">
-		<input type="text" class="input input-bordered" placeholder="Add todo" onkeydown={addTodo} />
+	<div class="flex w-screen px-14">
+		<input
+			type="text"
+			class=" w-full input input-bordered"
+			placeholder="Add task"
+			onkeydown={addTask}
+		/>
 	</div>
-
-	<div class="filters">
-		{#each ['all', 'remaining', 'completed'] as filter}
-			<button class="btn btn-outline mx-2" onclick={() => setFilter(filter)}>{filter}</button>
-		{/each}
-	</div>
+	{#if remaining > 0}
+		<div>You have {remaining} tasks left.</div>
+	{:else}
+		<div>You have no tasks left.</div>
+	{/if}
 </div>
