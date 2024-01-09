@@ -1,16 +1,17 @@
 <script>
+	import { fly } from 'svelte/transition';
 	let tasks = $state([]);
 	let remaining = $derived(remainingTasks());
 
 	function addTask(event) {
 		if (event.key !== 'Enter') return;
-		const taskElement = event.target;
-		const text = taskElement.value;
+		const inputElement = event.target;
+		const text = inputElement.value;
 		const checked = false;
 
 		if (text !== '') {
 			tasks = [...tasks, { text, checked }];
-			taskElement.value = '';
+			inputElement.value = '';
 		}
 	}
 
@@ -31,18 +32,26 @@
 		return remainingTasks.length;
 	}
 
-	function deleteTask(event) {
-		const taskElement = event.target;
-		const index =
-			taskElement.parentElement.parentElement.parentElement.childNodes[2].childNodes[0].dataset
-				.index;
-		tasks.splice(index, 1);
+	function clearAllTasks() {
+		tasks = [];
 	}
+
+	let currentDate = new Date();
+	let day = currentDate.toLocaleString('en-US', { weekday: 'long' });
+	let date = currentDate.toLocaleString('en-US', {
+		day: 'numeric',
+		month: 'numeric',
+		year: 'numeric'
+	});
 </script>
 
-<div class="tasks h-screen w-screen flex flex-col justify-center items-center gap-4">
+<div class="tasks h-screen flex flex-col justify-center items-center gap-4">
+	<div class="flex flex-col items-center justify-center text-5xl">
+		<h1>{day}</h1>
+		<h1>{date}</h1>
+	</div>
 	{#each tasks as task, i}
-		<div class="task flex gap-2">
+		<div class="task flex gap-2" in:fly={{ x: 100, duration: 200 }}>
 			<input
 				type="text"
 				value={task.text}
@@ -59,29 +68,12 @@
 					data-index={i}
 				/>
 			</div>
-			<div class="flex justify-center items-center">
-				<button class="btn btn-sm btn-outline btn-error rounded-full" onclick={deleteTask}
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-6 w-6"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						><path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						/></svg
-					></button
-				>
-			</div>
 		</div>
 	{/each}
-	<div class="flex w-screen px-14">
+	<div class="flex justify-center items-center">
 		<input
 			type="text"
-			class=" w-full input input-bordered"
+			class=" w-full md:w-96 input input-bordered input-lg"
 			placeholder="Add task"
 			onkeydown={addTask}
 		/>
@@ -90,5 +82,9 @@
 		<div>You have {remaining} tasks left.</div>
 	{:else}
 		<div>You have no tasks left.</div>
+	{/if}
+
+	{#if tasks.length > 0}
+		<button class="btn btn-active" onclick={clearAllTasks}>clear all</button>
 	{/if}
 </div>
