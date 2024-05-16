@@ -74,9 +74,8 @@
 		inputElement.blur();
 	}
 
-	function updateCheckStatus(event: Event) {
-		const checkBox = event.target as HTMLInputElement;
-		const inputElement = checkBox.parentElement?.parentElement?.querySelector(
+	function updateCheckStatus(checkbox: EventTarget & HTMLButtonElement) {
+		const inputElement = checkbox.parentElement?.parentElement?.querySelector(
 			'input[type="text"]'
 		) as HTMLInputElement | null;
 		if (!inputElement) {
@@ -94,10 +93,14 @@
 			console.error(`Task with UUID ${taskId} not found.`);
 			return;
 		}
-		taskToUpdate.status = checkBox.dataset.state === 'checked' ? true : false;
+		taskToUpdate.status = checkbox.dataset.state === 'checked' ? false : true;
 
-		update(taskToUpdate, taskId);
-		inputElement.classList.toggle('opacity-50');
+		const index = tasks.findIndex((t: Task) => t.id === taskId);
+		if (index > -1) {
+			tasks[index] = taskToUpdate;
+		}
+		localStorage.removeItem('tasks.');
+		localStorage.setItem('tasks.', JSON.stringify(tasks));
 	}
 
 	function update(taskToUpdate: Task, taskId: string) {
@@ -144,7 +147,12 @@
 				{#each tasks as task}
 					<div class="flex items-center gap-4">
 						<Input data-uuid={task.id} type="text" value={task.title} onkeydown={updateTask} />
-						<Checkbox checked={task.status} onclick={updateCheckStatus} />
+						<Checkbox
+							checked={task.status}
+							on:click={(e) => {
+								updateCheckStatus(e.detail.currentTarget);
+							}}
+						/>
 						<Button onclick={removeTask}><X class="h-6 w-6" /></Button>
 					</div>
 				{/each}
