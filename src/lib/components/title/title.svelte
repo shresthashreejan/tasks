@@ -1,4 +1,4 @@
-<nav class="absolute text-5xl p-2">
+<nav class="sticky text-5xl p-2">
 	<h1 class="nav-title">Tasks.</h1>
 </nav>
 
