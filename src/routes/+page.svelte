@@ -158,6 +158,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Tasks.</title>
+</svelte:head>
+
 <main>
 	<Title />
 
